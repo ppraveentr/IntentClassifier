@@ -10,6 +10,7 @@ import FoundationModels
 
 @Observable
 final class CapturePaymentIntentTool: Tool {
+    
     let name = "capturePaymentDetails"
     let description = """
             You're responsible for extracting structured instructions from the user's message when intend is related to any payments.
@@ -24,6 +25,11 @@ final class CapturePaymentIntentTool: Tool {
             - date (if the user mentions something like 'tomorrow', 'July 4', '10 days' or 'next Friday')
             - accountType (account type mentioned) (e.g., credit card, savings, checking)
             """
+
+//    init() {
+//        let instructions = Instructions { "Extract payment details from the user's request using the provided schema." }
+//        self.session = LanguageModelSession(tools: [self], instructions: instructions)
+//    }
 
     @Generable(description: "Dollar and cent amount.")
     struct Amount: Equatable {
@@ -64,7 +70,13 @@ final class CapturePaymentIntentTool: Tool {
     }
 
     func call(arguments: Arguments) async throws -> ToolOutput {
-        return ToolOutput(arguments.formatedOutput.debugDescription)
+        ToolOutput(arguments.formatedOutput.debugDescription)
     }
+    
+//    func extractPayment(from text: String) async throws -> ToolOutput? {
+//        guard let session else { return nil }
+//        let prompt = Prompt({ text })
+//        let result = try await session.respond(to: prompt, generating: Arguments.self, includeSchemaInPrompt: false)
+//        return ToolOutput(result.content.formatedOutput.debugDescription)
+//    }
 }
-

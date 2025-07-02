@@ -9,29 +9,29 @@
 import SwiftUI
 
 struct GenerateButton: View {
+    var title: String
+    var imageName: String = "sparkles"
+
     var showButton: Binding<Bool>
     let closure: () async throws -> Void
 
     var body: some View {
         HStack(alignment: .center) {
-            Spacer()
-            SpinnerView(isShowing: showButton)
-            Spacer().frame(maxWidth: 20)
             Button {
                 Task { @MainActor in
                     try await closure()
                 }
-            }
-            label: {
-                Label("Find Intent", systemImage: "sparkles")
+            } label: {
+                SpinnerView(isShowing: showButton)
+                    .frame(width: 24, height: 24)
+                    .padding(.leading, 8)
+                Label(title, systemImage: imageName)
+                    .foregroundColor(.accentColor)
                     .fontWeight(.bold)
                     .padding()
             }
-            .buttonStyle(.bordered)
-            .padding()
-            .transition(.opacity)
-            .opacity(showButton.wrappedValue ? 0 : 1)
-            Spacer()
+            .disabled(showButton.wrappedValue)
+            .buttonRowStyle()
         }
         .animation(
             .easeInOut(duration: 0.5),

@@ -39,9 +39,9 @@ public struct PaymentDetails: Equatable {
         """
 PaymentIntent(
     type: \(type)
-    recipient: \(recipient)
-    reason: \(reason ?? "nil")
-    amount: \(amount?.formatted)
+    recipient: \(String(describing: recipient))
+    reason: \(String(describing: reason))
+    amount: \(String(describing: amount?.formatted))
     method: \(accountType)
     date: \(date?.stringDate ?? "nil"))
 )

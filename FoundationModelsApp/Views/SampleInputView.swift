@@ -9,32 +9,35 @@
 import SwiftUI
 
 struct SampleInputView: View {
+    @State private var isSampleGenerating: Bool = false
     @State private var isSampleInputsExpanded: Bool = true
     @State private var expandedCategory: String? = nil
+    @State private var sampleInputs: [InputModel] = InputModel.loadFromBundle()
 
     var userInput: Binding<String>
-    
-    private static var sampleInputs: [InputModel] = {
-        InputModel.loadFromBundle()
-    }()
+    let inputSelectionClosure: () -> Void
 
-    private static var grouped: [String: [InputModel]] = {
+    private var grouped: [String: [InputModel]] {
         Dictionary(grouping: sampleInputs, by: { $0.category })
-    }()
-
-    private static var sortedCategories: [String] = {
+    }
+    
+    private var sortedCategories: [String] {
         grouped.keys.sorted()
-    }()
-
+    }
+    
     var body: some View {
         VStack(alignment: .leading) {
+            GenerateButton(title: "Generate Sample", imageName: "arrow.clockwise", showButton: $isSampleGenerating) {
+                updateSampleList()
+            }
+
             button(isExpanded: isSampleInputsExpanded, text: "Sample Inputs") {
                 isSampleInputsExpanded.toggle()
             }
 
             if isSampleInputsExpanded {
                 VStack(alignment: .leading, spacing: 8) {
-                    ForEach(Self.sortedCategories, id: \.self) { category in
+                    ForEach(sortedCategories, id: \.self) { category in
                         let isExpanded = expandedCategory == category
                         VStack(alignment: .leading, spacing: 0) {
                             button(isExpanded: isExpanded, text: category) {
@@ -48,10 +51,10 @@ struct SampleInputView: View {
                             Spacer()
                                 .frame(height: isExpanded ? 10 : 0)
                             if isExpanded {
-                                InputRowView(samples: Self.grouped[category] ?? [], userInput: userInput)
-                                    .padding(.horizontal, 8)
-                                    .animation(.easeInOut, value: isExpanded)
-                                    .background(.thinMaterial)
+                                InputRowView(samples: grouped[category] ?? [], userInput: userInput, closure: inputSelectionClosure)
+                                .padding(.horizontal, 8)
+                                .animation(.easeInOut, value: isExpanded)
+                                .background(.thinMaterial)
                             }
                         }
                         .cornerRadius(8)
@@ -62,7 +65,20 @@ struct SampleInputView: View {
                 .padding(.horizontal)
             }
         }
+        .onAppear {
+            updateSampleList()
+        }
         .padding(.horizontal)
+    }
+
+    func updateSampleList() {
+        Task {
+            isSampleGenerating = true
+            if let model = try? await IntentSampleGenerator().generateSamples(), !model.isEmpty {
+                sampleInputs = model
+            }
+            isSampleGenerating = false
+        }
     }
 
     @ViewBuilder

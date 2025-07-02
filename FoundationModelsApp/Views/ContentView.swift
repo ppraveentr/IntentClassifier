@@ -23,16 +23,18 @@ struct ContentView: View {
             TextField("e.g. \(String(describing: sampleInputs.first?.title))", text: $userInput)
                 .textFieldStyle(.roundedBorder)
 
-            GenerateButton(showButton: $isProcessing) {
-                Task {
-                    await generateIntent()
-                }
+            GenerateButton(title: "Find Intent", showButton: $isProcessing) {
+                await generateIntent()
             }
             .disabled(userInput.trimmingCharacters(in: .whitespaces).isEmpty || isProcessing)
 
             HStack(alignment: .top) {
                 VStack {
-                    SampleInputView(userInput: $userInput)
+                    SampleInputView(userInput: $userInput) {
+                        Task {
+                            await generateIntent()
+                        }
+                    }
                 }
                 .frame(maxWidth: .infinity)
                 .buttonStyle(.bordered)
@@ -71,6 +73,7 @@ struct ContentView: View {
         isProcessing = true
         defer { isProcessing = false }
         generatedIntend = .unknown
+        outputText = "Calculating..."
         do {
             generatedIntend = try await intendClassifier.captureIntent(userInput)
             switch generatedIntend {

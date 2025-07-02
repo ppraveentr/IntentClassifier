@@ -15,4 +15,16 @@ public enum UserIntent: Equatable {
     case cardManagement
     case accountQuery
     case unknown
+
+    public static var allKeys: [String] {
+        return [
+            "payment",
+            "schedule_appointment",
+            "check_fico",
+            "find_atm",
+            "cardManagement",
+            "accountQuery"
+        ]
+    }
+
 }

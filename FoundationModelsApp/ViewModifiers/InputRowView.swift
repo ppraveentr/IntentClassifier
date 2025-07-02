@@ -11,12 +11,14 @@ import SwiftUI
 struct InputRowView: View {
     let samples: [InputModel]
     @Binding var userInput: String
-    
+    let closure: () -> Void
+
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             ForEach(samples, id: \.title) { sample in
                 Button(action: {
                     userInput = sample.title
+                    closure()
                 }) {
                     Text(sample.title)
                         .font(.body)

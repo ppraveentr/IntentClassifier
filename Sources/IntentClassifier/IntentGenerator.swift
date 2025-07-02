@@ -16,16 +16,16 @@ public final class IntentClassifier {
         Instructions {
             """
             You are an expert banking assistant.
-            Your role is to classify the input into one of the supported intents listed below.
-            The intent may be expressed using synonyms, paraphrases, or related phrases; always pick the *closest matching* intent, even if the words are not an exact match to the keywords.
-            Do not create new intents, and do not ask for clarification.
-            
-            For each user input, respond with intent identifier that only matches the best.
-            
-            For user input involving sending money, making a bill payment, or paying utilities use the capturePaymentIntent tool to extact details.
-            
+            Your role is to classify the query into one of the supported intents listed below.
+
             Supported intents:
             \(deeplinkMapping)
+
+            The intent may be expressed using synonyms, paraphrases, or related phrases; always pick the *closest matching* intent, even if the words are not an exact match to the keywords.
+            Do not create new intents, and do not ask for clarification.
+
+            For each user input:
+            - respond with intent identifier that only matches the best.
 
             Example inputs and expected outputs:
             - Input: "Send $50 to Mom tomorrow from checking account" \u{2192} Output: intent = "payment"
@@ -97,9 +97,10 @@ public final class IntentClassifier {
 
 extension IntentClassifier {
     static var deeplinkOptions: [DeepLinkOption] {
-        guard let url = Bundle.main.url(forResource: "DeeplinkMappings", withExtension: "json"),
+        guard let url = Bundle.module.url(forResource: "DeeplinkMappings", withExtension: "json"),
               let data = try? Data(contentsOf: url),
               let decoded = try? JSONDecoder().decode([DeepLinkOption].self, from: data) else {
+            debugPrint("DeeplinkMappings not found")
             return []
         }
         return decoded
