@@ -19,6 +19,9 @@ This app demonstrates how to extract and classify user banking intents from natu
 - Example requests and robust parsing of dates and entities
 - Sample input picker and real-time output display
 
+<img width="461" alt="Payment Indend" src="https://github.com/user-attachments/assets/e878da60-c1b8-4343-9d3c-bd07d5f1d7e5" />
+<img width="461" alt="Schedule appointments Indend" src="https://github.com/user-attachments/assets/1014d549-954a-4946-914a-e016a6b4fa5e" />
+
 ## Usage
 
 1. Open the project in Xcode 26.0 or later.

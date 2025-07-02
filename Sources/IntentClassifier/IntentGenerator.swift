@@ -15,7 +15,8 @@ public final class IntentClassifier {
     static func instructions(_ deeplinkMapping: String) -> Instructions {
         Instructions {
             """
-            You are an expert banking assistant. Your task is to classify user's request into one of the supported intents listed below.
+            You are an expert banking assistant.
+            Your role is to classify the input into one of the supported intents listed below.
             The intent may be expressed using synonyms, paraphrases, or related phrases; always pick the *closest matching* intent, even if the words are not an exact match to the keywords.
             Do not create new intents, and do not ask for clarification.
             
@@ -27,7 +28,7 @@ public final class IntentClassifier {
             \(deeplinkMapping)
 
             Example inputs and expected outputs:
-            - Input: "Send $50 to Mom tomorrow from checking" \u{2192} Output: intent = "payment"
+            - Input: "Send $50 to Mom tomorrow from checking account" \u{2192} Output: intent = "payment"
             - Input: "Pay my Chase credit card bill on July 10" \u{2192} Output: intent = "payment"
             - Input: "What's my current FICO score?" \u{2192} Output: intent = "checkFICO"
             - Input: "Show me my credit score" \u{2192} Output: intent = "checkFICO"
@@ -60,7 +61,7 @@ public final class IntentClassifier {
     public func captureIntent(_ text: String) async throws -> UserIntent {
         let promt = Prompt({
             """
-            Extract the user's banking intent and details for this request:
+            Extract the user's intent and details for this request:
             \(text)
             """
         })
@@ -89,7 +90,7 @@ public final class IntentClassifier {
         }
     }
 
-    public func prewarm() {
+    public func prewarmSession() {
         session.prewarm()
     }
 }

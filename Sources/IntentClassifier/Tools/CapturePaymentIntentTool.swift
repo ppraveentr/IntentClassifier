@@ -22,7 +22,7 @@ final class CapturePaymentIntentTool: Tool {
             - reason (what the payment is for)
             - amount (in dollars and cents)
             - date (if the user mentions something like 'tomorrow', 'July 4', '10 days' or 'next Friday')
-            - method (type of account mentioned) (e.g., credit card, savings, checking)
+            - accountType (account type mentioned) (e.g., credit card, savings, checking)
             """
 
     @Generable(description: "Dollar and cent amount.")
@@ -33,7 +33,7 @@ final class CapturePaymentIntentTool: Tool {
 
     @Generable(description: "Details about a payment intent")
     struct Arguments: Equatable {
-        @Guide(description: "Sending money to another person, recevie money from a entity or a person, or billPayment to an entity.",
+        @Guide(description: "Type of indent Sending money to another person, recevie money from a entity or a person, or billPayment to an entity.",
                .anyOf(PaymentType.allCases.map(\.rawValue)))
         let type: String
         @Guide(description: "Person or entity receiving the payment.")
@@ -42,11 +42,11 @@ final class CapturePaymentIntentTool: Tool {
         let reason: String
         @Guide(description: "Dollar and cent amount.")
         let amount: Amount?
-        @Guide(description: "Payment date string (use today as reference), e.g., 'in 10 days', 'July 28', or 'next Monday'.")
+        @Guide(description: "Payment date (use today as reference), e.g., 'in 10 days', 'July 28', or 'next Monday'.")
         let date: String?
-        @Guide(description: "Type of payment method used.",
+        @Guide(description: "Account Type mentioned for payment.",
                .anyOf(PaymentMethod.allCases.map(\.rawValue)))
-        let method: String?
+        let accountType: String?
 
         var formatedOutput: PaymentDetails {
             var cur: Currency?
@@ -55,12 +55,11 @@ final class CapturePaymentIntentTool: Tool {
                 precondition(amount.cents >= 0 && amount.cents < 100, "Cents must be between 0 and 99")
                 cur = Currency(dollars: amount.dollars, cents: amount.cents)
             }
-            return PaymentDetails(type: type,
-                           recipient: recipient,
-                           reason: reason,
-                           amount: cur,
-                           date: Date.parseRelativeDate(date),
-                           method: method)
+            return PaymentDetails(
+                type: type, recipient: recipient, reason: reason, amount: cur,
+                date: Date.parseRelativeDate(date),
+                accountType: accountType
+            )
         }
     }
 
