@@ -1,0 +1,71 @@
+//
+//  CapturePaymentIntentTool.swift
+//  BankingIntentClasifier
+//
+//  Created by Praveen Prabhakar on 6/30/25.
+//
+
+import Foundation
+import FoundationModels
+
+@Observable
+final class CapturePaymentIntentTool: Tool {
+    let name = "capturePaymentDetails"
+    let description = """
+            You're responsible for extracting structured instructions from the user's message when intend is related to any payments.
+            Always format any date in 'dd/MM/yyyy'.
+            Do not assume any values.
+            
+            Look for details like:
+            - type ("Send, recevie, or billPayment" the payment)
+            - recipient (who is being paid)
+            - reason (what the payment is for)
+            - amount (in dollars and cents)
+            - date (if the user mentions something like 'tomorrow', 'July 4', '10 days' or 'next Friday')
+            - method (type of account mentioned) (e.g., credit card, savings, checking)
+            """
+
+    @Generable(description: "Dollar and cent amount.")
+    struct Amount: Equatable {
+        let dollars: Int
+        let cents: Int
+    }
+
+    @Generable(description: "Details about a payment intent")
+    struct Arguments: Equatable {
+        @Guide(description: "Sending money to another person, recevie money from a entity or a person, or billPayment to an entity.",
+               .anyOf(PaymentType.allCases.map(\.rawValue)))
+        let type: String
+        @Guide(description: "Person or entity receiving the payment.")
+        let recipient: String?
+        @Guide(description: "Purpose of the payment.")
+        let reason: String
+        @Guide(description: "Dollar and cent amount.")
+        let amount: Amount?
+        @Guide(description: "Payment date string (use today as reference), e.g., 'in 10 days', 'July 28', or 'next Monday'.")
+        let date: String?
+        @Guide(description: "Type of payment method used.",
+               .anyOf(PaymentMethod.allCases.map(\.rawValue)))
+        let method: String?
+
+        var formatedOutput: PaymentDetails {
+            var cur: Currency?
+            if let amount = amount {
+                precondition(amount.dollars >= 0, "Dollars must be non-negative")
+                precondition(amount.cents >= 0 && amount.cents < 100, "Cents must be between 0 and 99")
+                cur = Currency(dollars: amount.dollars, cents: amount.cents)
+            }
+            return PaymentDetails(type: type,
+                           recipient: recipient,
+                           reason: reason,
+                           amount: cur,
+                           date: Date.parseRelativeDate(date),
+                           method: method)
+        }
+    }
+
+    func call(arguments: Arguments) async throws -> ToolOutput {
+        return ToolOutput(arguments.formatedOutput.debugDescription)
+    }
+}
+

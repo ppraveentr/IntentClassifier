@@ -1,40 +1,30 @@
 //
-//  PaymentPlanner.swift
-//  OnDeviceLLMModel
+//  IntentClassifier.swift
+//  BankingIntentClasifier
 //
 //  Created by Praveen Prabhakar on 6/30/25.
 //
 
 import Foundation
-import Observation
 import FoundationModels
 
-@Generable
-enum UserIntent: Equatable {
-    case payment(PaymentIntent)
-    case scheduleAppointment
-    case checkFICO
-    case findATM
-    case cardManagement(action: String)
-    case accountQuery(account: String)
-    case unknown(raw: String)
-}
-
 @Observable @MainActor
-final class IntentModelGenerator {
+public final class IntentClassifier {
     private var session: LanguageModelSession
 
     static func instructions(_ deeplinkMapping: String) -> Instructions {
         Instructions {
             """
-            You are an expert banking assistant. Your task is to classify a user's request into one of the supported intents listed below.
+            You are an expert banking assistant. Your task is to classify user's request into one of the supported intents listed below.
             The intent may be expressed using synonyms, paraphrases, or related phrases; always pick the *closest matching* intent, even if the words are not an exact match to the keywords.
             Do not create new intents, and do not ask for clarification.
-
+            
+            For each user input, respond with intent identifier that only matches the best.
+            
+            For user input involving sending money, making a bill payment, or paying utilities use the capturePaymentIntent tool to extact details.
+            
             Supported intents:
             \(deeplinkMapping)
-
-            For each user input, respond with intent identifier that only matches the best.
 
             Example inputs and expected outputs:
             - Input: "Send $50 to Mom tomorrow from checking" \u{2192} Output: intent = "payment"
@@ -48,36 +38,41 @@ final class IntentModelGenerator {
             - Input: "Show me recent transactions in savings" \u{2192} Output: intent = "accountQuery"
             - Input: "Pay my electric bill on July 10" \u{2192} Output: intent = "payment"
 
-            Output format: 
+            Output: 
             - intent = "<intent identifier>"
             """
         }
     }
 
-    init() {
-        let deepLinktool = ClassifyDeeplinkTool()
+    public init() {
+        let deeplinkOptions = Self.deeplinkOptions
+        let deeplinkMapping = Self.deeplinkMapping(deeplinkOptions)
+
+        let paymenttool = CapturePaymentIntentTool()
+
         self.session = LanguageModelSession(
-            tools: [deepLinktool],
-            instructions: Self.instructions(deepLinktool.deeplinkMapping)
+            tools: [paymenttool],
+            instructions: Self.instructions(deeplinkMapping)
         )
     }
 
     @MainActor
-    func captureIntent(_ text: String) async throws -> UserIntent {
+    public func captureIntent(_ text: String) async throws -> UserIntent {
         let promt = Prompt({
             """
             Extract the user's banking intent and details for this request:
             \(text)
             """
         })
-        let classified = try await session.respond(to: promt, generating: ClassifiedDeeplinkIntent.self, includeSchemaInPrompt: false, options: GenerationOptions(sampling: .greedy))
-        let intent = classified.content.intent
-        
-        switch intent {
+        let classified = try await session.respond(to: promt, generating: DeeplinkIntent.self, includeSchemaInPrompt: false, options: GenerationOptions(sampling: .greedy))
+        print(classified.content.intent)
+        print(String(describing: classified.content.paymentDetails?.formatedOutput))
+        switch classified.content.intent {
         case .payment:
-            let paymentSession = PaymentModelGenerator()
-            let payment = try await paymentSession.captureIntent(text)
-            return .payment(payment)
+            if let pay = classified.content.paymentDetails?.formatedOutput {
+                return .payment(pay)
+            }
+            fallthrough
         case .scheduleAppointment:
             return .scheduleAppointment
         case .checkFICO:
@@ -86,16 +81,32 @@ final class IntentModelGenerator {
             return .findATM
         case .cardManagement:
             // No action info available - pass empty string
-            return .cardManagement(action: "")
+            return .cardManagement
         case .accountQuery:
-            return .accountQuery(account: "")
-        case .unknown:
-            return .unknown(raw: text)
+            return .accountQuery
+        default:
+            return .unknown
         }
     }
 
-    func prewarm() {
+    public func prewarm() {
         session.prewarm()
     }
 }
 
+extension IntentClassifier {
+    static var deeplinkOptions: [DeepLinkOption] {
+        guard let url = Bundle.main.url(forResource: "DeeplinkMappings", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let decoded = try? JSONDecoder().decode([DeepLinkOption].self, from: data) else {
+            return []
+        }
+        return decoded
+    }
+
+    static func deeplinkMapping(_ options: [DeepLinkOption]) -> String {
+        options.map {
+            "- \($0.intent): \($0.keywords.joined(separator: ", "))"
+        }.joined(separator: "\n")
+    }
+}

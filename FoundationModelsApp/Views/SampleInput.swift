@@ -25,72 +25,123 @@ struct SampleInput: Codable {
 
 struct SampleInputView: View {
     @State private var isSampleInputsExpanded: Bool = true
-    @State private var expandedCategories: Set<String> = []
+    @State private var expandedCategory: String? = nil
 
     var userInput: Binding<String>
+    
+    private static var sampleInputs: [SampleInput] = {
+        SampleInput.loadFromBundle()
+    }()
+
+    private static var grouped: [String: [SampleInput]] = {
+        Dictionary(grouping: sampleInputs, by: { $0.category })
+    }()
+
+    private static var sortedCategories: [String] = {
+        grouped.keys.sorted()
+    }()
 
     var body: some View {
-        let sampleInputs = SampleInput.loadFromBundle()
-        let grouped = Dictionary(grouping: sampleInputs, by: { $0.category })
-        let sortedCategories = grouped.keys.sorted()
-        
-        DisclosureGroup(
-            isExpanded: $isSampleInputsExpanded,
-            content: {
-                VStack(alignment: .leading, spacing: 4) {
-                    ForEach(sortedCategories, id: \.self) { category in
-                        let isExpanded = Binding<Bool>(
-                            get: { expandedCategories.contains(category) },
-                            set: { expanded in
-                                if expanded {
-                                    expandedCategories.insert(category)
+        VStack(alignment: .leading) {
+            button(isExpanded: isSampleInputsExpanded, text: "Sample Inputs") {
+                isSampleInputsExpanded.toggle()
+            }
+
+            if isSampleInputsExpanded {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(Self.sortedCategories, id: \.self) { category in
+                        let isExpanded = expandedCategory == category
+                        VStack(alignment: .leading, spacing: 0) {
+                            button(isExpanded: isExpanded, text: category) {
+                                if expandedCategory == category {
+                                    expandedCategory = nil
                                 } else {
-                                    expandedCategories.remove(category)
+                                    expandedCategory = category
                                 }
                             }
-                        )
-                        DisclosureGroup(
-                            isExpanded: isExpanded,
-                            content: {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    ForEach(grouped[category] ?? [], id: \.title) { sample in
-                                        Text(sample.title)
-                                            .onTapGesture {
-                                                userInput.wrappedValue = sample.title
-                                            }
-                                            .padding(.vertical, 2)
-                                    }
-                                }
-                                .padding(.horizontal, 8)
-                            },
-                            label: {
-                                button(isExpanded: isExpanded, text: category)
+
+                            Spacer()
+                                .frame(height: isExpanded ? 10 : 0)
+                            if isExpanded {
+                                SampleInputTable(samples: Self.grouped[category] ?? [], userInput: userInput)
+                                    .padding(.horizontal, 8)
+                                    .animation(.easeInOut, value: isExpanded)
+                                    .background(.thinMaterial)
                             }
-                        )
+                        }
+                        .cornerRadius(8)
+                        .shadow(radius: 1)
+                        .padding(.vertical, 4)
                     }
                 }
                 .padding(.horizontal)
-            },
-            label: {
-                button(isExpanded: $isSampleInputsExpanded, text: "Sample Imputs")
             }
-        )
+        }
         .padding(.horizontal)
     }
 
     @ViewBuilder
-    func button(isExpanded: Binding<Bool>, text: String) -> some View {
-        Button(action: {
-            isExpanded.wrappedValue.toggle()
-        }) {
+    func button(isExpanded: Bool, text: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
             HStack {
-                Image(systemName: isExpanded.wrappedValue ? "chevron.down" : "chevron.right")
+                Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
                     .foregroundColor(.accentColor)
+                    .padding(.leading, 4)
                 Text(text)
-                    .foregroundColor(.primary)
                 Spacer()
             }
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .font(.headline)
+        .foregroundColor(.primary)
+        .opacity(0.9)
+        .padding(8)
+        .background(.thinMaterial)
+        .cornerRadius(8)
+        .shadow(radius: 1)
+        .padding(.vertical, 4)
+    }
+}
+
+struct SampleInputTable: View {
+    let samples: [SampleInput]
+    @Binding var userInput: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            ForEach(samples, id: \.title) { sample in
+                Button(action: {
+                    userInput = sample.title
+                }) {
+                    Text(sample.title)
+                        .font(.body)
+                        .foregroundColor(userInput == sample.title ? .accentColor : .primary)
+                    .padding(8)
+                }
+                .buttonStyle(.plain)
+                .padding(.vertical, 1)
+            }
+        }
+    }
+}
+
+private struct SampleRowStyle: ViewModifier {
+    let selected: Bool
+    
+    func body(content: Content) -> some View {
+        content
+            .fontWeight(selected ? .semibold : .regular)
+            .foregroundColor(selected ? .accentColor : .primary)
+            .background(selected ? Color.accentColor.opacity(0.07) : Color.clear)
+            .contentShape(Rectangle())
+            .padding(.vertical, 2)
+            .padding(.leading, 6)
+    }
+}
+
+extension View {
+    func sampleRowStyle(selected: Bool) -> some View {
+        self.modifier(SampleRowStyle(selected: selected))
     }
 }

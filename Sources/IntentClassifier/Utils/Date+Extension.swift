@@ -1,6 +1,6 @@
 //
 //  Date+Extension.swift
-//  FoundationModelsApp
+//  BankingIntentClasifier
 //
 //  Created by Praveen Prabhakar on 6/30/25.
 //
@@ -20,19 +20,35 @@ import SwiftUI
  • Not recognized: Very abstract or indirect phrasing, or empty input.
  */
 public extension Date {
-    static func parseRelativeDate(_ input: String?) -> String? {
+    static func parseRelativeDate(_ input: String?) -> Date? {
         guard let input, let date = parsedDate(from: input) else { return nil }
-        let dateformatter = DateFormatter()
-        dateformatter.dateFormat = "dd/MM/yyyy"
-        dateformatter.locale = Locale(identifier: "en_US_POSIX")
-        //        dateformatter.timeZone = TimeZone(secondsFromGMT: 0)
-        dateformatter.calendar = Calendar(identifier: .gregorian)
-        return dateformatter.string(from: date)
+        return formatter.date(from: date)
 
+    }
+
+    var stringDate: String? {
+        return Self.formatter.string(from: self)
+    }
+
+    static var formatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd/MM/yyyy"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        //formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.calendar = Calendar(identifier: .gregorian)
+        return formatter
     }
 }
 
 private extension Date {
+
+    static var timezone: TimeZone {
+        .current
+    }
+
+    static var calendar: Calendar {
+        Calendar(identifier: .gregorian)
+    }
 
     // MARK: - Precompiled Regex Patterns for Relative Dates
 
@@ -62,7 +78,6 @@ private extension Date {
     ///   - date: The reference date from which to find the next weekday.
     /// - Returns: The next date matching the given weekday name, or nil if the name is invalid.
     static func nextWeekday(named weekdayName: String, from date: Date) -> Date? {
-        let calendar = Calendar.current
         let lowercasedWeekday = weekdayName.lowercased()
 
         // Weekday symbols from the calendar start with Sunday at index 1
@@ -94,7 +109,6 @@ private extension Date {
 
     // 1. Add a helper to match and resolve partial weekday strings.
     private static func resolveWeekdayName(_ input: String) -> String? {
-        let calendar = Calendar.current
         let weekdays = calendar.weekdaySymbols.map { $0.lowercased() }
         // Accept full or partial (first 3+) match
         let lcInput = input.lowercased().trimmingCharacters(in: .whitespaces)
@@ -114,22 +128,21 @@ private extension Date {
     /// and weekday names (e.g., "monday", "tuesday").
     ///
     /// - Parameter string: Input date string to parse.
-    /// - Returns: Parsed `Date` if recognized, otherwise `nil`.
-    static func parsedDate(from string: String?) -> Date? {
+    /// - Returns: Parsed date string formatted as "dd/MM/yyyy" if recognized, otherwise `nil`.
+    static func parsedDate(from string: String?) -> String? {
         guard let string = string else { return nil }
 
         // MARK: Attempt explicit date formats
         let formats = [
             "MMMM d", "MMM d", "M/d/yyyy", "yyyy-MM-dd", "MMMM d, yyyy",
-            "MMMM d yyyy", "EEEE", "EEEE h a", "h:mm a", "h a", "d MMM yyyy"
+            "MMMM d yyyy", "EEEE", "EEEE h a", "h:mm a", "h a", "d MMM yyyy", "MM/dd/yy", "yyyy-MM-dd HH:mm:ss",
+            "mm/dd/yyyy HH:mm:ss", "mm/dd/yyyy", "yyyy-MM-dd HH:mm"
         ]
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
 
         for format in formats {
             formatter.dateFormat = format
             if let date = formatter.date(from: string) {
-                return date
+                return formatter.string(from: date)
             }
         }
 
@@ -146,7 +159,9 @@ private extension Date {
                 case "year", "years": comp.year = num
                 default: break
                 }
-                return Calendar.current.date(byAdding: comp, to: Date())
+                if let date = calendar.date(byAdding: comp, to: Date()) {
+                    return formatter.string(from: date)
+                }
             }
         }
 
@@ -163,37 +178,47 @@ private extension Date {
             case "year": comp.year = 1
             default: break
             }
-            return Calendar.current.date(byAdding: comp, to: Date())
+            if let date = calendar.date(byAdding: comp, to: Date()) {
+                return formatter.string(from: date)
+            }
         }
 
         // MARK: Handle explicit keywords for common relative dates
         switch lowercased {
         case "tomorrow":
-            return Calendar.current.date(byAdding: .day, value: 1, to: Date())
+            if let date = calendar.date(byAdding: .day, value: 1, to: Date()) {
+                return formatter.string(from: date)
+            }
         case "yesterday":
-            return Calendar.current.date(byAdding: .day, value: -1, to: Date())
+            if let date = calendar.date(byAdding: .day, value: -1, to: Date()) {
+                return formatter.string(from: date)
+            }
         case "today":
-            return Date()
+            return formatter.string(from: Date())
         case "now", "asap", "as soon as possible", "immediately":
-            return Date()
+            return formatter.string(from: Date())
         case "whenever":
             return nil
         case "the day after tomorrow":
-            return Calendar.current.date(byAdding: .day, value: 2, to: Date())
+            if let date = calendar.date(byAdding: .day, value: 2, to: Date()) {
+                return formatter.string(from: date)
+            }
         case "the day before yesterday":
-            return Calendar.current.date(byAdding: .day, value: -2, to: Date())
+            if let date = calendar.date(byAdding: .day, value: -2, to: Date()) {
+                return formatter.string(from: date)
+            }
         default:
             // Check if the string matches a weekday name
             if let nextWeekdayDate = nextWeekday(named: lowercased, from: Date()) {
-                return nextWeekdayDate
+                return formatter.string(from: nextWeekdayDate)
             }
         }
 
         // MARK: Fallback to NSDataDetector for other natural language date detection
         if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.date.rawValue) {
             let range = NSRange(string.startIndex..., in: string)
-            if let match = detector.firstMatch(in: string, options: [], range: range) {
-                return match.date
+            if let match = detector.firstMatch(in: string, options: [], range: range)?.date {
+                return formatter.string(from: match)
             }
         }
 

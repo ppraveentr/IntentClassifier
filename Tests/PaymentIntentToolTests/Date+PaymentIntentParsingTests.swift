@@ -1,6 +1,6 @@
 //
 //  Date+PaymentIntentParsingTests.swift
-//  FoundationModelsAppTests
+//  BankingIntentClasifierTests
 //
 //  Created by Praveen Prabhakar on 6/30/25.
 //

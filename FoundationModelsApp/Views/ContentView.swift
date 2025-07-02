@@ -6,6 +6,7 @@
 //  Copyright © 2025 Apple. All rights reserved.
 //
 
+import IntentClassifier
 import SwiftUI
 
 struct ContentView: View {
@@ -13,8 +14,8 @@ struct ContentView: View {
     @State private var outputText: String = ""
     @State private var isProcessing = false
 
-    @State private var planner = IntentModelGenerator()
-    @State private var generatedIntend: UserIntent?
+    @State private var planner = IntentClassifier()
+    @State private var generatedIntend: UserIntent = .unknown
 
     @State private var sampleInputs: [SampleInput] = []
 
@@ -71,14 +72,14 @@ struct ContentView: View {
     func parseRequest() async {
         isProcessing = true
         defer { isProcessing = false }
-        generatedIntend = nil
+        generatedIntend = .unknown
         do {
             generatedIntend = try await planner.captureIntent(userInput)
             switch generatedIntend {
             case let .payment(pament):
                 outputText = pament.debugDescription
             default:
-                outputText = generatedIntend.debugDescription
+                outputText = String(describing: generatedIntend)
             }
         } catch {
             outputText = "❌ Error: \(error.localizedDescription)"
