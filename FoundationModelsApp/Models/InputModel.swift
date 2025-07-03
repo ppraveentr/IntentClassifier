@@ -13,7 +13,7 @@ import IntentClassifier
 @Generable(description: "An example of user input for generating a sample response list for a given category")
 struct InputModel: Codable {
     @Guide(description: "Category for describing the input text",
-           .anyOf(UserIntent.allKeys))
+           .anyOf(IntentKeywordMappingProvider.deeplinkCategory))
     let category: String
     @Guide(description: "Sample user input in natural language format for the category")
     let title: String

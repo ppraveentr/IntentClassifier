@@ -20,10 +20,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "IntentClassifier",
-            resources: [
-                .process("Resources/DeeplinkMappings.json")
-            ]
+            name: "IntentClassifier"
         ),
         .testTarget(
             name: "IntentClassifierTests",
