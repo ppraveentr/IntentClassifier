@@ -8,14 +8,14 @@ public final class IntentSampleGenerator {
 
     @MainActor
     static let instructions: Instructions = {
-        let values = UserIntent.allKeys.joined(separator: ", ")
+        let values = IntentKeywordMappingProvider.deeplinkCategory.joined(separator: ", ")
         return Instructions {
                 """
-                You are an expert in generating user query that a person can ask a chat bot to execute an action.
+                You are an banking expert in generating user query that a person can ask a chat bot to execute an action.
                 Supproted intent category: \(values).
-                For payment intent, randomly include amount in USD and add future date.
-                Each should be plausible and in natural English.
-                Do NOT number the items. Separate each with a newline.
+                Each should be plausible, in natural English and unique reason.
+                For payment intent, be creative with name and if needed include purpose, amount (USD) and/or add future date in natural language.
+                DO NOT USE similar use case.
                 """
         }
     }()
@@ -26,7 +26,7 @@ public final class IntentSampleGenerator {
 
     func generateSamples() async throws -> [InputModel] {
         var samples: [InputModel] = []
-        for intent in UserIntent.allKeys {
+        for intent in IntentKeywordMappingProvider.deeplinkCategory {
             do {
                 let prompt = Prompt {
                 """

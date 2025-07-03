@@ -88,11 +88,20 @@ struct SampleInputView: View {
                 Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
                     .foregroundColor(.accentColor)
                     .padding(.leading, 4)
-                Text(text)
+                Text(splitCamelCase(text))
                 Spacer()
             }
             .contentShape(Rectangle())
         }
         .buttonRowStyle()
     }
+
+    private func splitCamelCase(_ text: String) -> String {
+        let pattern = "([a-z])([A-Z])"
+        let regex = try? NSRegularExpression(pattern: pattern, options: [])
+        let range = NSRange(location: 0, length: text.count)
+        let modString = regex?.stringByReplacingMatches(in: text, options: [], range: range, withTemplate: "$1 $2") ?? text
+        return modString.prefix(1).uppercased() + modString.dropFirst()
+    }
+
 }

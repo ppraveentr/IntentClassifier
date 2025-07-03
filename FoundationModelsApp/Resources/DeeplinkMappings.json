@@ -1,0 +1,37 @@
+[
+    {
+        "intent": "payment",
+        "keywords": ["send money", "transfer", "pay", "give", "remit", "pay bill", "bill payment", "send bill", "utility"],
+        "examples": ["Pay my Chase credit card bill on July 10"]
+    },
+    {
+        "intent": "scheduleAppointment",
+        "keywords": ["appointment", "schedule meeting", "book", "reserve"],
+        "examples": ["Schedule an appointment with a banker next Friday"]
+    },
+    {
+        "intent": "checkFICO",
+        "keywords": ["fico", "credit score", "equifax", "transunion", "experian"],
+        "examples": ["Show me my credit score"]
+    },
+    {
+        "intent": "findATM",
+        "keywords": ["atm", "cash machine", "find atm", "nearest atm"],
+        "examples": ["Find the nearest ATM"]
+    },
+    {
+        "intent": "cardManagement",
+        "keywords": ["freeze card", "lock card", "replace card", "card management"],
+        "examples": ["Freeze my debit card"]
+    },
+    {
+        "intent": "accountQuery",
+        "keywords": ["account details", "account info", "balance", "view balance"],
+        "examples": ["Show me recent transactions in savings"]
+    },
+    {
+        "intent": "unknown",
+        "keywords": [],
+        "examples": []
+    }
+]

@@ -14,7 +14,7 @@ struct ContentView: View {
     @State private var outputText: String = ""
     @State private var isProcessing = false
     @State private var intendClassifier = IntentClassifier()
-    @State private var generatedIntend: UserIntent = .unknown
+    @State private var generatedIntend: [String: Any?] = ["unknown": nil]
     @State private var sampleInputs: [InputModel] = []
 
     var body: some View {
@@ -72,16 +72,17 @@ struct ContentView: View {
     func generateIntent() async {
         isProcessing = true
         defer { isProcessing = false }
-        generatedIntend = .unknown
+        generatedIntend = ["unknown": nil]
         outputText = "Calculating..."
         do {
             generatedIntend = try await intendClassifier.captureIntent(userInput)
-            switch generatedIntend {
-            case let .payment(pament):
-                outputText = pament.debugDescription
-            default:
-                outputText = String(describing: generatedIntend)
-            }
+            outputText = generatedIntend.debugDescription
+//            switch generatedIntend {
+//            case let .payment(pament):
+//                outputText = pament.debugDescription
+//            default:
+//                outputText = String(describing: generatedIntend)
+//            }
         } catch {
             outputText = "❌ Error: \(error.localizedDescription)"
         }
