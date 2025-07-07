@@ -65,9 +65,6 @@ struct SampleInputView: View {
                 .padding(.horizontal)
             }
         }
-        .onAppear {
-            updateSampleList()
-        }
         .padding(.horizontal)
     }
 

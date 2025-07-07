@@ -14,6 +14,6 @@ struct DeeplinkIntent: Equatable {
            .anyOf(IntentKeywordMappingProvider.deeplinkCategory))
     let intent: String
 
-    @Guide(description: "Payment intent details, if available.")
-    let paymentDetails: CapturePaymentIntentTool.Arguments?
+    @Guide(description: "Details mentioned in the intent")
+    let details: ExtractIntentDetailsTool.Arguments?
 }

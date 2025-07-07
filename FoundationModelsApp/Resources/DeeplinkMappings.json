@@ -26,7 +26,7 @@
     },
     {
         "intent": "accountQuery",
-        "keywords": ["account details", "account info", "balance", "view balance"],
+        "keywords": ["account details", "account info", "balance", "view balance", "Check status"],
         "examples": ["Show me recent transactions in savings"]
     },
     {

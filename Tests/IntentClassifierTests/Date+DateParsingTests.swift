@@ -1,5 +1,5 @@
 //
-//  Date+PaymentIntentParsingTests.swift
+//  Date+DateParsingTests.swift
 //  BankingIntentClasifierTests
 //
 //  Created by Praveen Prabhakar on 6/30/25.
@@ -10,10 +10,9 @@ import Foundation
 import Testing
 
 // Create a new file with Swift Testing macros to verify the smart parsing logic in Date.parsedDate(from:)
-// Place in same module as CapturePaymentIntentTool.swift
 
-@Suite("Date natural language parsing for payment intent")
-struct PaymentIntentDateParsingTests {
+@Suite("Date natural language parsing")
+struct DateParsingTests {
     @Test("Standard explicit dates")
     func explicitFormats() async throws {
         #expect(Date.parsedDate(from: "07/04/2024") != nil)

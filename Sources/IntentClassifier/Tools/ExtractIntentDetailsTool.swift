@@ -9,21 +9,22 @@ import Foundation
 import FoundationModels
 
 @Observable
-final class CapturePaymentIntentTool: Tool {
+final class ExtractIntentDetailsTool: Tool {
     
-    let name = "capturePaymentDetails"
+    let name = "extractIntendDetails"
     let description = """
-            You're responsible for extracting structured instructions from the user's message when intend is related to any payments.
+            You're responsible for extracting structured instructions from the user's message.
             Always format any date in 'dd/MM/yyyy'.
             Do not assume any values.
             
             Look for details like:
-            - type ("Send, recevie, or billPayment" the payment)
-            - recipient (who is being paid)
-            - reason (what the payment is for)
+            - type (Send, recevie, or billPayment the payment)
+            - recipient (who is being paid or any named entity)
+            - reason
             - amount (in dollars and cents)
             - date (if the user mentions something like 'tomorrow', 'July 4', '10 days' or 'next Friday')
             - accountType (account type mentioned) (e.g., credit card, savings, checking)
+            - accountNumber
             """
 
 //    init() {
@@ -53,6 +54,8 @@ final class CapturePaymentIntentTool: Tool {
         @Guide(description: "Account Type mentioned for payment.",
                .anyOf(PaymentMethod.allCases.map(\.rawValue)))
         let accountType: String?
+        @Guide(description: "Any account number associated.")
+        let accountNumber: String?
 
         var formatedOutput: PaymentDetails {
             var cur: Currency?

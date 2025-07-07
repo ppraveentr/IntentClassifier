@@ -1,9 +1,9 @@
 [
-    { "category": "Transfer", "title": "Transfer $200 to Dad next week." },
-    { "category": "Transfer", "title": "Send 45.25 to Emma for rent." },
-    { "category": "Bill Payment", "title": "Pay the gas bill on August 1." },
-    { "category": "Transfer", "title": "Remit $60 to my landlord today." },
-    { "category": "Bill Payment", "title": "Pay for groceries at Walmart from my savings account." },
+    { "category": "payment", "title": "Transfer $200 to Dad next week." },
+    { "category": "payment", "title": "Send 45.25 to Emma for rent." },
+    { "category": "payment", "title": "Remit $60 to my landlord today." },
+    { "category": "payment", "title": "Pay the gas bill on August 1." },
+    { "category": "payment", "title": "Pay for groceries at Walmart from my savings account." },
     { "category": "Appointment", "title": "Book an appointment with a teller next Monday." },
     { "category": "Appointment", "title": "I’d like to reserve a meeting at the branch." },
     { "category": "Appointment", "title": "Schedule a session with my financial advisor." },
@@ -18,6 +18,5 @@
     { "category": "Card Management", "title": "Freeze all my cards." },
     { "category": "Account Balance", "title": "How much do I have in checking?" },
     { "category": "Account Balance", "title": "Show me my savings account balance." },
-    { "category": "Account Balance", "title": "What’s the balance in my main account?" },
-    { "category": "Account Details", "title": "View my account details." }
+    { "category": "Account Balance", "title": "What’s the balance in my main account?" }
 ]

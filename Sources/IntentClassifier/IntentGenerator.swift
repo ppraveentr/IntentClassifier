@@ -40,7 +40,7 @@ public final class IntentClassifier {
     public init() {
         let deeplinkMapping = IntentKeywordMappingProvider.intentKeywordsMapping
         let deeplinkExampls = IntentKeywordMappingProvider.categoryExamples
-        let paymenttool = CapturePaymentIntentTool()
+        let paymenttool = ExtractIntentDetailsTool()
 
         self.session = LanguageModelSession(
             tools: [paymenttool],
@@ -49,7 +49,7 @@ public final class IntentClassifier {
     }
 
     @MainActor
-    public func captureIntent(_ text: String) async throws -> [String: Any?] {
+    public func captureIntent(_ text: String) async throws -> (String, IntentDetails?) {
         let promt = Prompt({
             """
             Extract the user's intent and details for this request:
@@ -59,10 +59,10 @@ public final class IntentClassifier {
         do {
             let classified = try await session.respond(to: promt, generating: DeeplinkIntent.self, includeSchemaInPrompt: false, options: GenerationOptions(sampling: .greedy))
             print(classified.content.intent)
-            print(String(describing: classified.content.paymentDetails?.formatedOutput))
+            print(String(describing: classified.content.details?.formatedOutput))
             let intent = classified.content.intent
-            let data = classified.content.paymentDetails?.formatedOutput
-            return [intent: data]
+            let data = classified.content.details?.formatedOutput
+            return (intent, data)
         } catch {
             print("❌ Error: \(error)")
             throw error
